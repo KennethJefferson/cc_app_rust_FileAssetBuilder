@@ -13,6 +13,7 @@ A fast, parallel file consolidation tool written in Rust. Scans a directory and 
 - **Dynamic scaling** - Worker count adjusts based on file count: `ceil(files / 10)`
 - **Tree-style listing** - Directory structure displayed like `tree /f` command
 - **Absolute paths** - File content headers show full quoted absolute paths
+- **Skip if exists** - Skips processing if output file already exists
 
 ## Installation
 

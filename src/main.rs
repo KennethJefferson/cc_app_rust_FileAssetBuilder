@@ -54,6 +54,12 @@ fn main() {
 
     let output_path = input_dir.join(&args.output);
 
+    if output_path.exists() {
+        println!("Output file already exists: {:?}", output_path);
+        println!("Skipping scan and file creation.");
+        return;
+    }
+
     println!("Starting directory scan and file processing...\n");
     println!("Input directory: {:?}", input_dir);
     println!("Output file: {:?}\n", output_path);

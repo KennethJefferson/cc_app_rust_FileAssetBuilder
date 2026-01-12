@@ -195,6 +195,7 @@ FileAssetBuilder uses parallel processing with dynamic worker scaling:
 - **Tree-style listing** - Directory structure displayed like `tree /f` with box-drawing characters
 - **Absolute paths** - File content headers show full absolute paths in double quotes
 - **Output location** - Always written to the input directory root
+- **Skip if exists** - If the output file already exists, the tool skips processing and exits early
 
 ## Troubleshooting
 
