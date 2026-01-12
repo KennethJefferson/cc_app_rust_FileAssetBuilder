@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-01-12
+
+### Changed
+
+- **Breaking**: Removed recursive directory traversal - now only processes files in the specified directory (no subdirectories)
+- Output section renamed from "Directory Structure" to "File List" (flat list of filenames)
+- Dynamic worker pool sizing: `workers = ceil(file_count / 10)`
+  - Example: 8 files = 1 worker, 35 files = 4 workers, 355 files = 36 workers
+- Statistics output now shows "Workers used" instead of "Total directories scanned"
+
+### Removed
+
+- Recursive subdirectory scanning
+- `walkdir` dependency (now uses `std::fs::read_dir`)
+- Auto-exclusion of development directories (.git, node_modules, etc.) - no longer needed without recursion
+
+### Technical Details
+
+- Custom thread pool created per invocation with `rayon::ThreadPoolBuilder`
+- Simplified codebase with single-level directory traversal
+
 ## [0.1.0] - 2026-01-12
 
 ### Added
@@ -50,5 +71,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - clap 4.5 for CLI parsing
   - chrono 0.4 for timestamp formatting
 
-[Unreleased]: https://github.com/username/FileAssetBuilder/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/username/FileAssetBuilder/releases/tag/v0.1.0
+[Unreleased]: https://github.com/KennethJefferson/cc_app_rust_FileAssetBuilder/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/KennethJefferson/cc_app_rust_FileAssetBuilder/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/KennethJefferson/cc_app_rust_FileAssetBuilder/releases/tag/v0.1.0

@@ -15,7 +15,7 @@ pub fn write_output(output_path: &Path, result: &ScanResult) -> Result<(), Strin
     let mut writer = BufWriter::new(file);
 
     write_header(&mut writer)?;
-    write_directory_structure(&mut writer, &result.directory_tree)?;
+    write_file_list(&mut writer, &result.file_list)?;
     write_files(&mut writer, result)?;
 
     writer
@@ -40,12 +40,11 @@ fn write_header(writer: &mut BufWriter<File>) -> Result<(), String> {
     Ok(())
 }
 
-fn write_directory_structure(writer: &mut BufWriter<File>, tree: &str) -> Result<(), String> {
+fn write_file_list(writer: &mut BufWriter<File>, file_list: &str) -> Result<(), String> {
     writeln!(writer, "{}", SEPARATOR).map_err(|e| format!("Write error: {}", e))?;
-    writeln!(writer, "Directory Structure").map_err(|e| format!("Write error: {}", e))?;
+    writeln!(writer, "File List").map_err(|e| format!("Write error: {}", e))?;
     writeln!(writer, "{}\n", SEPARATOR).map_err(|e| format!("Write error: {}", e))?;
-    write!(writer, "{}", tree).map_err(|e| format!("Write error: {}", e))?;
-    writeln!(writer).map_err(|e| format!("Write error: {}", e))?;
+    writeln!(writer, "{}", file_list).map_err(|e| format!("Write error: {}", e))?;
 
     Ok(())
 }

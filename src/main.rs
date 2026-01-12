@@ -69,10 +69,10 @@ fn main() {
 
             println!("\nProcessing complete!");
             println!("Statistics:");
-            println!("- Total directories scanned: {}", result.stats.total_directories);
             println!("- Total files found: {}", result.stats.total_files);
             println!("- Files excluded by config: {}", result.stats.files_excluded);
             println!("- Files processed: {}", result.stats.files_processed);
+            println!("- Workers used: {}", result.stats.worker_count);
             println!("Output written to: {:?}", output_path);
         }
         Err(e) => {

@@ -48,9 +48,9 @@ fileassetbuilder C:\Users\dev\projects\myapp
 fileassetbuilder /home/dev/projects/myapp
 ```
 
-### Multiple Projects
+### Multiple Directories
 
-Process multiple directories (run separately):
+Process multiple directories separately:
 
 ```bash
 fileassetbuilder ./frontend -o frontend-assets.txt
@@ -128,26 +128,20 @@ This file is a merged representation of the directory, combining all text-based 
 Generated on: 2026-01-12 10:30:00
 ```
 
-### 2. Directory Structure
+### 2. File List
 
 ```
 ================================================================
-Directory Structure
+File List
 ================================================================
 
-src/
-  components/
-    Button.tsx
-    Modal.tsx
-  utils/
-    helpers.ts
-  index.ts
-package.json
+Cargo.toml
+README.md
+main.rs
 ```
 
-- Directories end with `/`
-- Indentation shows nesting (2 spaces per level)
-- Only non-excluded files are shown
+- Simple alphabetically sorted list of filenames
+- Only shows files that will be processed (non-excluded)
 
 ### 3. File Contents
 
@@ -157,31 +151,46 @@ Files
 ================================================================
 
 ================
-File: src\components\Button.tsx
+File: Cargo.toml
 ================
-import React from 'react';
+[package]
+name = "my-project"
+version = "0.1.0"
 
-export const Button = () => <button>Click</button>;
-
 ================
-File: src\components\Modal.tsx
+File: main.rs
 ================
-...
+fn main() {
+    println!("Hello, world!");
+}
 ```
 
-- Each file has a header with its relative path
-- Files are sorted alphabetically by path
+- Each file has a header with its filename
+- Files are sorted alphabetically
 - Original content is preserved (including whitespace)
 
 ## Performance
 
-FileAssetBuilder uses parallel processing for file reads:
+FileAssetBuilder uses parallel processing with dynamic worker scaling:
 
-- Directory traversal is sequential (walkdir)
-- File content reading is parallel (rayon)
+- Directory listing is sequential
+- File content reading is parallel using rayon
+- Worker count: `ceil(file_count / 10)`
 - Output writing is sequential (single file)
 
-For large directories with many files, this provides significant speedup compared to sequential processing.
+| Files | Workers |
+|-------|---------|
+| 1-10  | 1       |
+| 11-20 | 2       |
+| 50    | 5       |
+| 100   | 10      |
+| 355   | 36      |
+
+## Important Notes
+
+- **Single directory only** - Subdirectories are NOT traversed
+- **Files only** - Subdirectories in the input path are skipped
+- **Output location** - Always written to the input directory root
 
 ## Troubleshooting
 
@@ -205,3 +214,7 @@ Ensure the path exists and is accessible. Use absolute paths if relative paths c
 ### Binary garbage in output
 
 If you see garbled content, the file is likely binary but has an extension not in the exclusion list. Add the extension to `config.txt`.
+
+### Files in subdirectories not included
+
+This is expected behavior. FileAssetBuilder only processes files directly in the specified directory. Subdirectories are intentionally skipped.
