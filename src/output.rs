@@ -56,7 +56,7 @@ fn write_files(writer: &mut BufWriter<File>, result: &ScanResult) -> Result<(), 
 
     for file in &result.files {
         writeln!(writer, "{}", FILE_SEPARATOR).map_err(|e| format!("Write error: {}", e))?;
-        writeln!(writer, "File: {}", file.relative_path)
+        writeln!(writer, "File: \"{}\"", file.absolute_path)
             .map_err(|e| format!("Write error: {}", e))?;
         writeln!(writer, "{}", FILE_SEPARATOR).map_err(|e| format!("Write error: {}", e))?;
         writeln!(writer, "{}", file.content).map_err(|e| format!("Write error: {}", e))?;

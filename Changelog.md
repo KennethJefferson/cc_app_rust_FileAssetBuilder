@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.2] - 2026-01-12
+
+### Changed
+
+- File content headers now show full absolute paths instead of relative paths
+- File paths wrapped in double quotes for clarity
+- Strips Windows `\\?\` extended-length path prefix for cleaner output
+
+### Example
+
+```
+================
+File: "K:\Downloads\Project\src\main.rs"
+================
+```
+
 ## [0.3.1] - 2026-01-12
 
 ### Changed
@@ -108,7 +124,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - clap 4.5 for CLI parsing
   - chrono 0.4 for timestamp formatting
 
-[Unreleased]: https://github.com/KennethJefferson/cc_app_rust_FileAssetBuilder/compare/v0.3.1...HEAD
+[Unreleased]: https://github.com/KennethJefferson/cc_app_rust_FileAssetBuilder/compare/v0.3.2...HEAD
+[0.3.2]: https://github.com/KennethJefferson/cc_app_rust_FileAssetBuilder/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/KennethJefferson/cc_app_rust_FileAssetBuilder/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/KennethJefferson/cc_app_rust_FileAssetBuilder/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/KennethJefferson/cc_app_rust_FileAssetBuilder/compare/v0.1.0...v0.2.0

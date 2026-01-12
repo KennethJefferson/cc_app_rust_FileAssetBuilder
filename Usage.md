@@ -154,21 +154,21 @@ Files
 ================================================================
 
 ================
-File: Cargo.toml
+File: "C:\projects\my-project\Cargo.toml"
 ================
 [package]
 name = "my-project"
 version = "0.1.0"
 
 ================
-File: src\main.rs
+File: "C:\projects\my-project\src\main.rs"
 ================
 fn main() {
     println!("Hello, world!");
 }
 ```
 
-- Each file has a header with its relative path
+- Each file has a header with its full absolute path in quotes
 - Files are sorted alphabetically by path
 - Original content is preserved (including whitespace)
 
@@ -193,6 +193,7 @@ FileAssetBuilder uses parallel processing with dynamic worker scaling:
 
 - **Recursive scanning** - All subdirectories are traversed automatically
 - **Tree-style listing** - Directory structure displayed like `tree /f` with box-drawing characters
+- **Absolute paths** - File content headers show full absolute paths in double quotes
 - **Output location** - Always written to the input directory root
 
 ## Troubleshooting

@@ -53,6 +53,7 @@ cargo run -- <input_directory> [-o <output_filename>]
 4. **Parallel reads** - Files are read concurrently with rayon, then sorted for deterministic output
 5. **Output location** - Always writes to input directory root, only filename is configurable
 6. **Tree-style listing** - Directory list uses `tree /f` style output with box-drawing characters
+7. **Absolute paths in Files section** - File content headers show full absolute paths in quotes
 
 ## Configuration
 

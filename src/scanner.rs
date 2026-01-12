@@ -8,7 +8,7 @@ use walkdir::WalkDir;
 use crate::config::Config;
 
 pub struct FileEntry {
-    pub relative_path: String,
+    pub absolute_path: String,
     pub content: String,
 }
 
@@ -111,8 +111,11 @@ pub fn scan_directory(
                 match fs::read_to_string(path) {
                     Ok(content) => {
                         println!("Processing: {}", relative);
+                        let abs_path = path.to_string_lossy().to_string();
+                        // Strip Windows extended-length path prefix
+                        let abs_path = abs_path.strip_prefix(r"\\?\").unwrap_or(&abs_path).to_string();
                         Some(FileEntry {
-                            relative_path: relative.clone(),
+                            absolute_path: abs_path,
                             content,
                         })
                     }
@@ -126,7 +129,7 @@ pub fn scan_directory(
     });
 
     let mut files = files;
-    files.sort_by(|a, b| a.relative_path.cmp(&b.relative_path));
+    files.sort_by(|a, b| a.absolute_path.cmp(&b.absolute_path));
 
     stats.files_processed = files.len();
 
