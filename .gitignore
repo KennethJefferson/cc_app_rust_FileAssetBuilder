@@ -1,0 +1,27 @@
+# Rust build artifacts
+/target/
+**/*.rs.bk
+Cargo.lock
+
+# IDE and editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Generated config (user-specific)
+config.txt
+
+# Output files
+fileassets.txt
+*.generated.txt
+
+# Debug files
+*.pdb
+*.dSYM/
+
+# Environment files
+.env
+.env.local
