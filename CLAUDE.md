@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-FileAssetBuilder is a Rust CLI tool that scans a single directory and consolidates all files (except excluded types) into a single output file. It uses a blacklist approach - everything is included unless the extension is in the exclusion config. Subdirectories are ignored.
+FileAssetBuilder is a Rust CLI tool that recursively scans a directory and consolidates all files (except excluded types) into a single output file. It uses a blacklist approach - everything is included unless the extension is in the exclusion config.
 
 ## Build Commands
 
@@ -35,22 +35,24 @@ cargo run -- <input_directory> [-o <output_filename>]
 
 - **main.rs** - Entry point, CLI argument parsing (clap), orchestrates other modules
 - **config.rs** - Loads/creates config.txt, manages extension blacklist as HashSet
-- **scanner.rs** - Single-directory file listing, parallel file reading (rayon)
+- **scanner.rs** - Recursive directory traversal (walkdir), parallel file reading (rayon)
 - **output.rs** - Formats and writes the consolidated output file
 
 ### Key Dependencies
 
+- `walkdir` - Recursive directory traversal
 - `rayon` - Parallel iterators and custom thread pool for concurrent file processing
 - `clap` - CLI argument parsing with derive macros
 - `chrono` - Timestamp formatting
 
 ### Design Decisions
 
-1. **Single directory only** - No recursive subdirectory traversal
+1. **Recursive scanning** - Traverses all subdirectories
 2. **Blacklist approach** - Config lists extensions to EXCLUDE
 3. **Dynamic worker pool** - Workers = ceil(file_count / 10)
 4. **Parallel reads** - Files are read concurrently with rayon, then sorted for deterministic output
 5. **Output location** - Always writes to input directory root, only filename is configurable
+6. **Relative paths** - File list shows paths relative to input directory (e.g., `subdir/file.txt`)
 
 ## Configuration
 

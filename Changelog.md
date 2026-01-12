@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-01-12
+
+### Added
+
+- Recursive directory scanning using `walkdir` crate
+- Relative path display in file list and file headers (e.g., `src\main.rs` instead of just `main.rs`)
+
+### Changed
+
+- Scanner now traverses all subdirectories automatically
+- File list shows full relative paths from input directory root
+
+### Technical Details
+
+- Added `walkdir 2.5` dependency for recursive traversal
+- `scanner.rs` refactored to use `WalkDir` iterator
+
 ## [0.2.0] - 2026-01-12
 
 ### Changed
@@ -71,6 +88,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - clap 4.5 for CLI parsing
   - chrono 0.4 for timestamp formatting
 
-[Unreleased]: https://github.com/KennethJefferson/cc_app_rust_FileAssetBuilder/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/KennethJefferson/cc_app_rust_FileAssetBuilder/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/KennethJefferson/cc_app_rust_FileAssetBuilder/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/KennethJefferson/cc_app_rust_FileAssetBuilder/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/KennethJefferson/cc_app_rust_FileAssetBuilder/releases/tag/v0.1.0

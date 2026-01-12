@@ -1,7 +1,8 @@
 use rayon::prelude::*;
 use rayon::ThreadPoolBuilder;
-use std::fs::{self, ReadDir};
+use std::fs;
 use std::path::{Path, PathBuf};
+use walkdir::WalkDir;
 
 use crate::config::Config;
 
@@ -37,22 +38,11 @@ pub fn scan_directory(
 
     println!("Scanning directory...");
 
-    let entries: ReadDir = fs::read_dir(&root)
-        .map_err(|e| format!("Failed to read directory: {}", e))?;
-
     let mut stats = ScanStats::default();
-    let mut file_paths: Vec<PathBuf> = Vec::new();
+    let mut file_paths: Vec<(PathBuf, String)> = Vec::new();
 
-    for entry in entries {
-        let entry = match entry {
-            Ok(e) => e,
-            Err(e) => {
-                eprintln!("Warning: Could not access entry: {}", e);
-                continue;
-            }
-        };
-
-        let path = entry.path();
+    for entry in WalkDir::new(&root).into_iter().filter_map(|e| e.ok()) {
+        let path = entry.path().to_path_buf();
 
         // Skip directories - only process files
         if path.is_dir() {
@@ -75,7 +65,12 @@ pub fn scan_directory(
         if config.should_exclude(&extension) {
             stats.files_excluded += 1;
         } else {
-            file_paths.push(path);
+            // Store relative path from root
+            let relative = path
+                .strip_prefix(&root)
+                .map(|p| p.to_string_lossy().to_string())
+                .unwrap_or_else(|_| path.file_name().unwrap_or_default().to_string_lossy().to_string());
+            file_paths.push((path, relative));
         }
     }
 
@@ -111,19 +106,17 @@ pub fn scan_directory(
     let files: Vec<FileEntry> = pool.install(|| {
         file_paths
             .par_iter()
-            .filter_map(|path| {
-                let filename = path.file_name()?.to_str()?.to_string();
-
+            .filter_map(|(path, relative)| {
                 match fs::read_to_string(path) {
                     Ok(content) => {
-                        println!("Processing: {}", filename);
+                        println!("Processing: {}", relative);
                         Some(FileEntry {
-                            relative_path: filename,
+                            relative_path: relative.clone(),
                             content,
                         })
                     }
                     Err(e) => {
-                        eprintln!("Warning: Could not read '{}': {}", filename, e);
+                        eprintln!("Warning: Could not read '{}': {}", relative, e);
                         None
                     }
                 }
@@ -143,15 +136,8 @@ pub fn scan_directory(
     })
 }
 
-fn build_file_list(file_paths: &[PathBuf]) -> String {
-    let mut names: Vec<String> = file_paths
-        .iter()
-        .filter_map(|p| p.file_name())
-        .filter_map(|n| n.to_str())
-        .map(|s| s.to_string())
-        .collect();
-
+fn build_file_list(file_paths: &[(PathBuf, String)]) -> String {
+    let mut names: Vec<&str> = file_paths.iter().map(|(_, rel)| rel.as_str()).collect();
     names.sort();
-
     names.join("\n")
 }

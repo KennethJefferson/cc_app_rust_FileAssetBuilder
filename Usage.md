@@ -137,10 +137,12 @@ File List
 
 Cargo.toml
 README.md
-main.rs
+src\config.rs
+src\main.rs
 ```
 
-- Simple alphabetically sorted list of filenames
+- Alphabetically sorted list of relative file paths
+- Shows full path relative to input directory (e.g., `src\main.rs`)
 - Only shows files that will be processed (non-excluded)
 
 ### 3. File Contents
@@ -158,15 +160,15 @@ name = "my-project"
 version = "0.1.0"
 
 ================
-File: main.rs
+File: src\main.rs
 ================
 fn main() {
     println!("Hello, world!");
 }
 ```
 
-- Each file has a header with its filename
-- Files are sorted alphabetically
+- Each file has a header with its relative path
+- Files are sorted alphabetically by path
 - Original content is preserved (including whitespace)
 
 ## Performance
@@ -188,8 +190,8 @@ FileAssetBuilder uses parallel processing with dynamic worker scaling:
 
 ## Important Notes
 
-- **Single directory only** - Subdirectories are NOT traversed
-- **Files only** - Subdirectories in the input path are skipped
+- **Recursive scanning** - All subdirectories are traversed automatically
+- **Relative paths** - File paths in output are relative to the input directory (e.g., `src\main.rs`)
 - **Output location** - Always written to the input directory root
 
 ## Troubleshooting
@@ -214,7 +216,3 @@ Ensure the path exists and is accessible. Use absolute paths if relative paths c
 ### Binary garbage in output
 
 If you see garbled content, the file is likely binary but has an extension not in the exclusion list. Add the extension to `config.txt`.
-
-### Files in subdirectories not included
-
-This is expected behavior. FileAssetBuilder only processes files directly in the specified directory. Subdirectories are intentionally skipped.

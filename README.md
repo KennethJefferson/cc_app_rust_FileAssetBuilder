@@ -4,12 +4,14 @@ A fast, parallel file consolidation tool written in Rust. Scans a directory and 
 
 ## Features
 
+- **Recursive scanning** - Traverses all subdirectories automatically
 - **Blacklist-based filtering** - Include everything except specified extensions
 - **Parallel processing** - Concurrent file reading with dynamic worker pool sizing
 - **Configurable exclusions** - Edit config.txt to customize which file types to skip
 - **Cross-platform** - Works on Windows, macOS, and Linux
 - **Deterministic output** - Files sorted alphabetically for consistent results
 - **Dynamic scaling** - Worker count adjusts based on file count: `ceil(files / 10)`
+- **Relative paths** - Output shows paths relative to input directory
 
 ## Installation
 
@@ -45,7 +47,8 @@ File List
 
 Cargo.toml
 README.md
-main.rs
+src\main.rs
+src\config.rs
 
 ================================================================
 Files
@@ -65,7 +68,7 @@ File: README.md
 ...
 
 ================
-File: main.rs
+File: src\main.rs
 ================
 fn main() {
     println!("Hello, world!");
@@ -110,8 +113,8 @@ Formula: `workers = ceil(file_count / 10)`
 
 ## Notes
 
-- Only processes files in the specified directory (no subdirectory recursion)
-- Subdirectories are skipped entirely
+- Recursively scans all subdirectories
+- File paths in output are relative to the input directory
 - Output file is always written to the input directory root
 
 ## Related Projects
