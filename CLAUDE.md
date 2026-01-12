@@ -52,7 +52,7 @@ cargo run -- <input_directory> [-o <output_filename>]
 3. **Dynamic worker pool** - Workers = ceil(file_count / 10)
 4. **Parallel reads** - Files are read concurrently with rayon, then sorted for deterministic output
 5. **Output location** - Always writes to input directory root, only filename is configurable
-6. **Relative paths** - File list shows paths relative to input directory (e.g., `subdir/file.txt`)
+6. **Tree-style listing** - Directory list uses `tree /f` style output with box-drawing characters
 
 ## Configuration
 

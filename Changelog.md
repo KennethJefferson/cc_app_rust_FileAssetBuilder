@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-01-12
+
+### Changed
+
+- Renamed "File List" section to "Directory List" in output
+- Directory listing now uses tree-style format matching `tree /f` command:
+  ```
+  ├───folder1
+  │   ├───file1.txt
+  │   └───file2.txt
+  └───folder2
+      └───file3.txt
+  ```
+
+### Technical Details
+
+- Added `TreeNode` struct in `scanner.rs` for building hierarchical tree structure
+- Uses `BTreeMap` for sorted, deterministic output
+- Box-drawing characters: `├───`, `└───`, `│   ` for tree visualization
+
 ## [0.3.0] - 2026-01-12
 
 ### Added
@@ -88,7 +108,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - clap 4.5 for CLI parsing
   - chrono 0.4 for timestamp formatting
 
-[Unreleased]: https://github.com/KennethJefferson/cc_app_rust_FileAssetBuilder/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/KennethJefferson/cc_app_rust_FileAssetBuilder/compare/v0.3.1...HEAD
+[0.3.1]: https://github.com/KennethJefferson/cc_app_rust_FileAssetBuilder/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/KennethJefferson/cc_app_rust_FileAssetBuilder/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/KennethJefferson/cc_app_rust_FileAssetBuilder/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/KennethJefferson/cc_app_rust_FileAssetBuilder/releases/tag/v0.1.0

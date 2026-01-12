@@ -1,5 +1,6 @@
 use rayon::prelude::*;
 use rayon::ThreadPoolBuilder;
+use std::collections::BTreeMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
@@ -136,8 +137,62 @@ pub fn scan_directory(
     })
 }
 
+#[derive(Default)]
+struct TreeNode {
+    children: BTreeMap<String, TreeNode>,
+    is_file: bool,
+}
+
+impl TreeNode {
+    fn insert(&mut self, parts: &[&str]) {
+        if parts.is_empty() {
+            return;
+        }
+        let child = self.children.entry(parts[0].to_string()).or_default();
+        if parts.len() == 1 {
+            child.is_file = true;
+        } else {
+            child.insert(&parts[1..]);
+        }
+    }
+
+    fn render(&self, prefix: &str, output: &mut String) {
+        let entries: Vec<_> = self.children.iter().collect();
+        for (i, (name, node)) in entries.iter().enumerate() {
+            let is_last = i == entries.len() - 1;
+            let connector = if is_last { "└───" } else { "├───" };
+            output.push_str(prefix);
+            output.push_str(connector);
+            output.push_str(name);
+            output.push('\n');
+
+            if !node.children.is_empty() {
+                let new_prefix = if is_last {
+                    format!("{}    ", prefix)
+                } else {
+                    format!("{}│   ", prefix)
+                };
+                node.render(&new_prefix, output);
+            }
+        }
+    }
+}
+
 fn build_file_list(file_paths: &[(PathBuf, String)]) -> String {
-    let mut names: Vec<&str> = file_paths.iter().map(|(_, rel)| rel.as_str()).collect();
-    names.sort();
-    names.join("\n")
+    let mut root = TreeNode::default();
+
+    for (_, rel) in file_paths {
+        let parts: Vec<&str> = rel.split(|c| c == '\\' || c == '/').collect();
+        root.insert(&parts);
+    }
+
+    let mut output = String::new();
+    root.render("", &mut output);
+
+    // Remove trailing newline if present
+    if output.ends_with('\n') {
+        output.pop();
+    }
+
+    output
 }

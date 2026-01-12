@@ -128,21 +128,22 @@ This file is a merged representation of the directory, combining all text-based 
 Generated on: 2026-01-12 10:30:00
 ```
 
-### 2. File List
+### 2. Directory List
 
 ```
 ================================================================
-File List
+Directory List
 ================================================================
 
-Cargo.toml
-README.md
-src\config.rs
-src\main.rs
+├───Cargo.toml
+├───README.md
+└───src
+    ├───config.rs
+    └───main.rs
 ```
 
-- Alphabetically sorted list of relative file paths
-- Shows full path relative to input directory (e.g., `src\main.rs`)
+- Tree-style display matching `tree /f` command output
+- Directories and files shown hierarchically with box-drawing characters
 - Only shows files that will be processed (non-excluded)
 
 ### 3. File Contents
@@ -191,7 +192,7 @@ FileAssetBuilder uses parallel processing with dynamic worker scaling:
 ## Important Notes
 
 - **Recursive scanning** - All subdirectories are traversed automatically
-- **Relative paths** - File paths in output are relative to the input directory (e.g., `src\main.rs`)
+- **Tree-style listing** - Directory structure displayed like `tree /f` with box-drawing characters
 - **Output location** - Always written to the input directory root
 
 ## Troubleshooting

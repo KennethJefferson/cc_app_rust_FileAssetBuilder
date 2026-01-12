@@ -11,7 +11,7 @@ A fast, parallel file consolidation tool written in Rust. Scans a directory and 
 - **Cross-platform** - Works on Windows, macOS, and Linux
 - **Deterministic output** - Files sorted alphabetically for consistent results
 - **Dynamic scaling** - Worker count adjusts based on file count: `ceil(files / 10)`
-- **Relative paths** - Output shows paths relative to input directory
+- **Tree-style listing** - Directory structure displayed like `tree /f` command
 
 ## Installation
 
@@ -42,13 +42,14 @@ This file is a merged representation of the directory, combining all text-based 
 Generated on: 2026-01-12 10:30:00
 
 ================================================================
-File List
+Directory List
 ================================================================
 
-Cargo.toml
-README.md
-src\main.rs
-src\config.rs
+├───Cargo.toml
+├───README.md
+└───src
+    ├───config.rs
+    └───main.rs
 
 ================================================================
 Files

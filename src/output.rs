@@ -42,7 +42,7 @@ fn write_header(writer: &mut BufWriter<File>) -> Result<(), String> {
 
 fn write_file_list(writer: &mut BufWriter<File>, file_list: &str) -> Result<(), String> {
     writeln!(writer, "{}", SEPARATOR).map_err(|e| format!("Write error: {}", e))?;
-    writeln!(writer, "File List").map_err(|e| format!("Write error: {}", e))?;
+    writeln!(writer, "Directory List").map_err(|e| format!("Write error: {}", e))?;
     writeln!(writer, "{}\n", SEPARATOR).map_err(|e| format!("Write error: {}", e))?;
     writeln!(writer, "{}", file_list).map_err(|e| format!("Write error: {}", e))?;
 
