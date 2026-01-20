@@ -18,73 +18,116 @@ const CONFIG_FILENAME: &str = "config.txt";
 #[command(name = "fileassetbuilder")]
 #[command(about = "Consolidate directory files into a single output file")]
 #[command(version)]
+#[command(after_help = "EXAMPLES:\n  \
+    fileassetbuilder \"[C:\\project]\"\n  \
+    fileassetbuilder \"[C:\\project1 C:\\project2]\"\n  \
+    fileassetbuilder \"[C:\\project]\" -o snapshot.txt")]
 struct Args {
-    /// Input directory to scan
-    #[arg(required = true)]
-    input_directory: PathBuf,
+    /// Input directories in bracket syntax: "[dir1 dir2 dir3]"
+    #[arg(required = true, value_parser = parse_bracket_input, num_args = 1..)]
+    input: Vec<Vec<PathBuf>>,
 
-    /// Output filename (written to input directory root)
+    /// Output filename (written to each input directory root)
     #[arg(short, long, default_value = DEFAULT_OUTPUT_FILENAME)]
     output: String,
+}
+
+/// Parse bracket-enclosed space-separated input: [dir1 dir2 dir3]
+fn parse_bracket_input(s: &str) -> Result<Vec<PathBuf>, String> {
+    let trimmed = s.trim();
+
+    // Check for bracket syntax
+    if trimmed.starts_with('[') && trimmed.ends_with(']') {
+        let inner = &trimmed[1..trimmed.len() - 1];
+        let paths: Vec<PathBuf> = inner
+            .split_whitespace()
+            .map(PathBuf::from)
+            .collect();
+
+        if paths.is_empty() {
+            return Err("Empty input list".to_string());
+        }
+        Ok(paths)
+    } else {
+        // Single path without brackets
+        Ok(vec![PathBuf::from(trimmed)])
+    }
 }
 
 fn main() {
     let args = Args::parse();
 
-    if !args.input_directory.exists() {
-        eprintln!("Error: Input directory does not exist: {:?}", args.input_directory);
-        std::process::exit(1);
-    }
-
-    if !args.input_directory.is_dir() {
-        eprintln!("Error: Input path is not a directory: {:?}", args.input_directory);
-        std::process::exit(1);
-    }
+    // Flatten input paths from bracket syntax
+    let input_dirs: Vec<PathBuf> = args.input.into_iter().flatten().collect();
 
     let config_path = get_config_path();
     let config = Config::load(&config_path);
 
-    let input_dir = match args.input_directory.canonicalize() {
-        Ok(p) => p,
-        Err(e) => {
-            eprintln!("Error: Could not resolve input directory: {}", e);
-            std::process::exit(1);
+    let mut has_errors = false;
+
+    for input_directory in &input_dirs {
+        println!("{}", "=".repeat(60));
+
+        if !input_directory.exists() {
+            eprintln!("Error: Input directory does not exist: {:?}", input_directory);
+            has_errors = true;
+            continue;
         }
-    };
 
-    let output_path = input_dir.join(&args.output);
+        if !input_directory.is_dir() {
+            eprintln!("Error: Input path is not a directory: {:?}", input_directory);
+            has_errors = true;
+            continue;
+        }
 
-    if output_path.exists() {
-        println!("Output file already exists: {:?}", output_path);
-        println!("Skipping scan and file creation.");
-        return;
+        let input_dir = match input_directory.canonicalize() {
+            Ok(p) => p,
+            Err(e) => {
+                eprintln!("Error: Could not resolve input directory: {}", e);
+                has_errors = true;
+                continue;
+            }
+        };
+
+        let output_path = input_dir.join(&args.output);
+
+        if output_path.exists() {
+            println!("Output file already exists: {:?}", output_path);
+            println!("Skipping scan and file creation.");
+            continue;
+        }
+
+        println!("Starting directory scan and file processing...\n");
+        println!("Input directory: {:?}", input_dir);
+        println!("Output file: {:?}\n", output_path);
+
+        match scan_directory(&input_dir, &config, &args.output) {
+            Ok(result) => {
+                println!("\nWriting output file...");
+
+                if let Err(e) = write_output(&output_path, &result) {
+                    eprintln!("Error writing output: {}", e);
+                    has_errors = true;
+                    continue;
+                }
+
+                println!("\nProcessing complete!");
+                println!("Statistics:");
+                println!("- Total files found: {}", result.stats.total_files);
+                println!("- Files excluded by config: {}", result.stats.files_excluded);
+                println!("- Files processed: {}", result.stats.files_processed);
+                println!("- Workers used: {}", result.stats.worker_count);
+                println!("Output written to: {:?}", output_path);
+            }
+            Err(e) => {
+                eprintln!("Error scanning directory: {}", e);
+                has_errors = true;
+            }
+        }
     }
 
-    println!("Starting directory scan and file processing...\n");
-    println!("Input directory: {:?}", input_dir);
-    println!("Output file: {:?}\n", output_path);
-
-    match scan_directory(&input_dir, &config, &args.output) {
-        Ok(result) => {
-            println!("\nWriting output file...");
-
-            if let Err(e) = write_output(&output_path, &result) {
-                eprintln!("Error writing output: {}", e);
-                std::process::exit(1);
-            }
-
-            println!("\nProcessing complete!");
-            println!("Statistics:");
-            println!("- Total files found: {}", result.stats.total_files);
-            println!("- Files excluded by config: {}", result.stats.files_excluded);
-            println!("- Files processed: {}", result.stats.files_processed);
-            println!("- Workers used: {}", result.stats.worker_count);
-            println!("Output written to: {:?}", output_path);
-        }
-        Err(e) => {
-            eprintln!("Error scanning directory: {}", e);
-            std::process::exit(1);
-        }
+    if has_errors {
+        std::process::exit(1);
     }
 }
 
