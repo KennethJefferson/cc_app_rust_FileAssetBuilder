@@ -19,17 +19,21 @@ const CONFIG_FILENAME: &str = "config.txt";
 #[command(about = "Consolidate directory files into a single output file")]
 #[command(version)]
 #[command(after_help = "EXAMPLES:\n  \
-    fileassetbuilder \"[C:\\project]\"\n  \
-    fileassetbuilder \"[C:\\project1 C:\\project2]\"\n  \
-    fileassetbuilder \"[C:\\project]\" -o snapshot.txt")]
+    fileassetbuilder -i \"[C:\\project]\"\n  \
+    fileassetbuilder -i \"[C:\\project1 C:\\project2]\"\n  \
+    fileassetbuilder -i \"[C:\\project]\" -o snapshot.txt")]
 struct Args {
     /// Input directories in bracket syntax: "[dir1 dir2 dir3]"
-    #[arg(required = true, value_parser = parse_bracket_input, num_args = 1..)]
+    #[arg(short, long, required = true, value_parser = parse_bracket_input, num_args = 1..)]
     input: Vec<Vec<PathBuf>>,
 
     /// Output filename (written to each input directory root)
     #[arg(short, long, default_value = DEFAULT_OUTPUT_FILENAME)]
     output: String,
+
+    /// Verbose output
+    #[arg(short, long, default_value = "false")]
+    verbose: bool,
 }
 
 /// Parse bracket-enclosed space-separated input: [dir1 dir2 dir3]
@@ -101,7 +105,7 @@ fn main() {
         println!("Input directory: {:?}", input_dir);
         println!("Output file: {:?}\n", output_path);
 
-        match scan_directory(&input_dir, &config, &args.output) {
+        match scan_directory(&input_dir, &config, &args.output, args.verbose) {
             Ok(result) => {
                 println!("\nWriting output file...");
 

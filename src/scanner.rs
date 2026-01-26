@@ -30,6 +30,7 @@ pub fn scan_directory(
     root: &Path,
     config: &Config,
     output_filename: &str,
+    verbose: bool,
 ) -> Result<ScanResult, String> {
     let root = root
         .canonicalize()
@@ -110,7 +111,9 @@ pub fn scan_directory(
             .filter_map(|(path, relative)| {
                 match fs::read_to_string(path) {
                     Ok(content) => {
-                        println!("Processing: {}", relative);
+                        if verbose {
+                            println!("Processing: {}", relative);
+                        }
                         let abs_path = path.to_string_lossy().to_string();
                         // Strip Windows extended-length path prefix
                         let abs_path = abs_path.strip_prefix(r"\\?\").unwrap_or(&abs_path).to_string();
