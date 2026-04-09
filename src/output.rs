@@ -16,7 +16,7 @@ pub fn write_output(output_path: &Path, result: &ScanResult) -> Result<(), Strin
 
     write_header(&mut writer)?;
     write_file_list(&mut writer, &result.file_list)?;
-    write_files(&mut writer, result)?;
+    write_courses(&mut writer, result)?;
 
     writer
         .flush()
@@ -49,18 +49,41 @@ fn write_file_list(writer: &mut BufWriter<File>, file_list: &str) -> Result<(), 
     Ok(())
 }
 
-fn write_files(writer: &mut BufWriter<File>, result: &ScanResult) -> Result<(), String> {
+fn format_course_start(name: &str) -> String {
+    let prefix = format!("===[ COURSE: {} ]", name);
+    let padding = 64_usize.saturating_sub(prefix.len());
+    format!("{}{}", prefix, "=".repeat(padding))
+}
+
+fn format_course_end(name: &str) -> String {
+    let prefix = format!("===[ END COURSE: {} ]", name);
+    let padding = 64_usize.saturating_sub(prefix.len());
+    format!("{}{}", prefix, "=".repeat(padding))
+}
+
+fn write_courses(writer: &mut BufWriter<File>, result: &ScanResult) -> Result<(), String> {
     writeln!(writer, "{}", SEPARATOR).map_err(|e| format!("Write error: {}", e))?;
-    writeln!(writer, "Files").map_err(|e| format!("Write error: {}", e))?;
+    writeln!(writer, "Courses").map_err(|e| format!("Write error: {}", e))?;
     writeln!(writer, "{}\n", SEPARATOR).map_err(|e| format!("Write error: {}", e))?;
 
-    for file in &result.files {
-        writeln!(writer, "{}", FILE_SEPARATOR).map_err(|e| format!("Write error: {}", e))?;
-        writeln!(writer, "File: \"{}\"", file.absolute_path)
+    for course in &result.courses {
+        writeln!(writer, "{}", format_course_start(&course.name))
             .map_err(|e| format!("Write error: {}", e))?;
-        writeln!(writer, "{}", FILE_SEPARATOR).map_err(|e| format!("Write error: {}", e))?;
-        writeln!(writer, "{}", file.content).map_err(|e| format!("Write error: {}", e))?;
-        writeln!(writer).map_err(|e| format!("Write error: {}", e))?;
+
+        for file in &course.files {
+            writeln!(writer, "{}", FILE_SEPARATOR)
+                .map_err(|e| format!("Write error: {}", e))?;
+            writeln!(writer, "File: \"{}\"", file.absolute_path)
+                .map_err(|e| format!("Write error: {}", e))?;
+            writeln!(writer, "{}", FILE_SEPARATOR)
+                .map_err(|e| format!("Write error: {}", e))?;
+            writeln!(writer, "{}", file.content)
+                .map_err(|e| format!("Write error: {}", e))?;
+            writeln!(writer).map_err(|e| format!("Write error: {}", e))?;
+        }
+
+        writeln!(writer, "{}\n", format_course_end(&course.name))
+            .map_err(|e| format!("Write error: {}", e))?;
     }
 
     Ok(())

@@ -15,13 +15,13 @@ const DEFAULT_OUTPUT_FILENAME: &str = "fileassets.txt";
 const CONFIG_FILENAME: &str = "config.txt";
 
 #[derive(Parser)]
-#[command(name = "fileassetbuilder")]
+#[command(name = "fileassetsbuildercourse")]
 #[command(about = "Consolidate directory files into a single output file")]
 #[command(version)]
 #[command(after_help = "EXAMPLES:\n  \
-    fileassetbuilder -i \"[C:\\project]\"\n  \
-    fileassetbuilder -i \"[C:\\project1 C:\\project2]\"\n  \
-    fileassetbuilder -i \"[C:\\project]\" -o snapshot.txt")]
+    fileassetsbuildercourse -i \"[C:\\project]\"\n  \
+    fileassetsbuildercourse -i \"[C:\\project1 C:\\project2]\"\n  \
+    fileassetsbuildercourse -i \"[C:\\project]\" -o snapshot.txt")]
 struct Args {
     /// Input directories in bracket syntax: "[dir1 dir2 dir3]"
     #[arg(short, long, required = true, value_parser = parse_bracket_input, num_args = 1..)]
@@ -117,8 +117,10 @@ fn main() {
 
                 println!("\nProcessing complete!");
                 println!("Statistics:");
+                println!("- Courses found: {}", result.stats.courses_found);
                 println!("- Total files found: {}", result.stats.total_files);
                 println!("- Files excluded by config: {}", result.stats.files_excluded);
+                println!("- Folders skipped: {}", result.stats.folders_skipped);
                 println!("- Files processed: {}", result.stats.files_processed);
                 println!("- Workers used: {}", result.stats.worker_count);
                 println!("Output written to: {:?}", output_path);
