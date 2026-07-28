@@ -2,6 +2,11 @@
 
 A fast, parallel file consolidation tool written in Rust. Scans a directory and merges all text-based files into a single output file, designed for creating AI-consumable representations of codebases.
 
+> **Interface note:** FileAssetBuilder is a plain CLI with `indicatif`
+> progress bars — it has no interactive TUI. The TUI member of this tool
+> family is [WorkspaceBuilder](https://github.com/KennethJefferson/ccg_app_rust_WorkspaceBuilder)
+> (ratatui), which consumes this tool's `fileassets.txt` output.
+
 ## Features
 
 - **Recursive scanning** - Traverses all subdirectories automatically
@@ -92,6 +97,21 @@ On first run, a `config.txt` file is created next to the executable with default
 - **Documents**: .pdf, .doc, .docx, .xls, .xlsx, etc.
 
 Edit this file to customize which extensions are excluded.
+
+### Filename Exclusions
+
+The `[filenames]` section excludes exact filenames or glob patterns
+(wildcards supported: `*`, `?`), matched on file name, not full path.
+Defaults:
+
+- package-lock.json
+- yarn.lock
+- pnpm-lock.yaml
+- \*.min.js
+- \*.min.css
+- \*.bundle.js
+- \*.bundle.css
+- \*.map
 
 ## Worker Scaling
 
