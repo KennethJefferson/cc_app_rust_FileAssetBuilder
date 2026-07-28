@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-07-28
+
+### Added
+
+- `[filenames]` config section: exclude files by exact name or glob pattern
+  (e.g. `package-lock.json`, `*.min.js`, `*.bundle.css`). Matches on file
+  name, not full path.
+- Default config now ships lockfile and minified/bundled-asset exclusions.
+
+### Changed
+
+- Config parsing refactored into a shared, unit-tested `parse_lines`
+  function used by both file loading and built-in defaults.
+
+### Notes
+
+- Restores a feature built ~2026-04 that was lost with the dev drive before
+  being pushed; re-implemented from the recovered spec in
+  `project_rust-tooling.md`.
+
 ## [0.3.3] - 2026-01-12
 
 ### Added
@@ -138,7 +158,8 @@ File: "K:\Downloads\Project\src\main.rs"
   - clap 4.5 for CLI parsing
   - chrono 0.4 for timestamp formatting
 
-[Unreleased]: https://github.com/KennethJefferson/cc_app_rust_FileAssetBuilder/compare/v0.3.3...HEAD
+[Unreleased]: https://github.com/KennethJefferson/cc_app_rust_FileAssetBuilder/compare/v0.5.1...HEAD
+[0.5.1]: https://github.com/KennethJefferson/cc_app_rust_FileAssetBuilder/compare/v0.5.0...v0.5.1
 [0.3.3]: https://github.com/KennethJefferson/cc_app_rust_FileAssetBuilder/compare/v0.3.2...v0.3.3
 [0.3.2]: https://github.com/KennethJefferson/cc_app_rust_FileAssetBuilder/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/KennethJefferson/cc_app_rust_FileAssetBuilder/compare/v0.3.0...v0.3.1

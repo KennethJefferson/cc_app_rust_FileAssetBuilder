@@ -95,7 +95,12 @@ pub fn scan_directory(
             .map(|e| format!(".{}", e))
             .unwrap_or_default();
 
-        if config.should_exclude(&extension) {
+        let file_name = path
+            .file_name()
+            .map(|n| n.to_string_lossy().to_string())
+            .unwrap_or_default();
+
+        if config.should_exclude(&extension) || config.should_exclude_filename(&file_name) {
             stats.files_excluded += 1;
         } else {
             // Store relative path from root

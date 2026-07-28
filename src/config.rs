@@ -1,7 +1,7 @@
 use globset::{Glob, GlobSet, GlobSetBuilder};
 use std::collections::HashSet;
 use std::fs::File;
-use std::io::{BufRead, BufReader, Write};
+use std::io::Write;
 use std::path::Path;
 
 const DEFAULT_CONFIG: &str = r#"# FileAssetBuilder Configuration
@@ -122,11 +122,83 @@ obj
 .parcel-cache
 coverage
 .nyc_output
+
+# Exact filenames or glob patterns to EXCLUDE (wildcards supported: *, ?)
+# Matches on file name, not full path.
+[filenames]
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+*.min.js
+*.min.css
+*.bundle.js
+*.bundle.css
+*.map
 "#;
 
 pub struct Config {
     pub excluded_extensions: HashSet<String>,
     pub excluded_folders: GlobSet,
+    pub excluded_filenames: GlobSet,
+}
+
+struct ParsedPatterns {
+    extensions: HashSet<String>,
+    folder_patterns: Vec<String>,
+    filename_patterns: Vec<String>,
+}
+
+#[derive(PartialEq)]
+enum Section {
+    Extensions,
+    Folders,
+    Filenames,
+}
+
+fn parse_lines<'a>(lines: impl Iterator<Item = &'a str>) -> ParsedPatterns {
+    let mut parsed = ParsedPatterns {
+        extensions: HashSet::new(),
+        folder_patterns: Vec::new(),
+        filename_patterns: Vec::new(),
+    };
+    let mut section = Section::Extensions;
+
+    for line in lines {
+        let trimmed = line.trim();
+
+        if trimmed.is_empty() || trimmed.starts_with('#') {
+            continue;
+        }
+        if trimmed.eq_ignore_ascii_case("[folders]") {
+            section = Section::Folders;
+            continue;
+        }
+        if trimmed.eq_ignore_ascii_case("[filenames]") {
+            section = Section::Filenames;
+            continue;
+        }
+        if trimmed.starts_with('[') && trimmed.ends_with(']') {
+            section = Section::Extensions;
+            continue;
+        }
+
+        match section {
+            Section::Extensions => {
+                if !trimmed.starts_with('.') {
+                    eprintln!(
+                        "Warning: Skipping invalid extension '{}' (must start with '.')",
+                        trimmed
+                    );
+                    continue;
+                }
+                parsed.extensions.insert(trimmed.to_lowercase());
+            }
+            Section::Folders => parsed.folder_patterns.push(trimmed.to_string()),
+            Section::Filenames => parsed.filename_patterns.push(trimmed.to_string()),
+        }
+    }
+
+    parsed
 }
 
 impl Config {
@@ -155,87 +227,28 @@ impl Config {
     }
 
     fn parse_config(config_path: &Path) -> std::io::Result<Self> {
-        let file = File::open(config_path)?;
-        let reader = BufReader::new(file);
-        let mut excluded_extensions = HashSet::new();
-        let mut folder_patterns: Vec<String> = Vec::new();
-        let mut in_folders_section = false;
-
-        for line in reader.lines() {
-            let line = line?;
-            let trimmed = line.trim();
-
-            if trimmed.is_empty() || trimmed.starts_with('#') {
-                continue;
-            }
-
-            if trimmed.eq_ignore_ascii_case("[folders]") {
-                in_folders_section = true;
-                continue;
-            }
-
-            if trimmed.starts_with('[') && trimmed.ends_with(']') {
-                in_folders_section = false;
-                continue;
-            }
-
-            if in_folders_section {
-                folder_patterns.push(trimmed.to_string());
-            } else {
-                if !trimmed.starts_with('.') {
-                    eprintln!(
-                        "Warning: Skipping invalid extension '{}' (must start with '.')",
-                        trimmed
-                    );
-                    continue;
-                }
-                excluded_extensions.insert(trimmed.to_lowercase());
-            }
-        }
-
-        let excluded_folders = build_glob_set(&folder_patterns);
+        let content = std::fs::read_to_string(config_path)?;
+        let parsed = parse_lines(content.lines());
 
         println!(
-            "Loaded {} excluded extensions and {} folder patterns from config",
-            excluded_extensions.len(),
-            folder_patterns.len()
+            "Loaded {} excluded extensions, {} folder patterns, {} filename patterns from config",
+            parsed.extensions.len(),
+            parsed.folder_patterns.len(),
+            parsed.filename_patterns.len()
         );
 
-        Ok(Self {
-            excluded_extensions,
-            excluded_folders,
-        })
+        Ok(Self::from_parsed(parsed))
     }
 
     fn with_defaults() -> Self {
-        let mut excluded_extensions = HashSet::new();
-        let mut folder_patterns: Vec<String> = Vec::new();
-        let mut in_folders_section = false;
+        Self::from_parsed(parse_lines(DEFAULT_CONFIG.lines()))
+    }
 
-        for line in DEFAULT_CONFIG.lines() {
-            let trimmed = line.trim();
-
-            if trimmed.is_empty() || trimmed.starts_with('#') {
-                continue;
-            }
-
-            if trimmed.eq_ignore_ascii_case("[folders]") {
-                in_folders_section = true;
-                continue;
-            }
-
-            if in_folders_section {
-                folder_patterns.push(trimmed.to_string());
-            } else if trimmed.starts_with('.') {
-                excluded_extensions.insert(trimmed.to_lowercase());
-            }
-        }
-
-        let excluded_folders = build_glob_set(&folder_patterns);
-
+    fn from_parsed(parsed: ParsedPatterns) -> Self {
         Self {
-            excluded_extensions,
-            excluded_folders,
+            excluded_extensions: parsed.extensions,
+            excluded_folders: build_glob_set(&parsed.folder_patterns),
+            excluded_filenames: build_glob_set(&parsed.filename_patterns),
         }
     }
 
@@ -245,6 +258,10 @@ impl Config {
 
     pub fn should_exclude_dir(&self, dir_name: &str) -> bool {
         self.excluded_folders.is_match(dir_name)
+    }
+
+    pub fn should_exclude_filename(&self, file_name: &str) -> bool {
+        self.excluded_filenames.is_match(file_name)
     }
 }
 
@@ -264,4 +281,54 @@ fn build_glob_set(patterns: &[String]) -> GlobSet {
         eprintln!("Warning: Failed to build folder exclusion set: {}", e);
         GlobSet::empty()
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn parse_lines_reads_all_three_sections() {
+        let input = "\
+# comment
+.mp4
+
+[folders]
+node_modules
+
+[filenames]
+package-lock.json
+*.min.js
+";
+        let parsed = parse_lines(input.lines());
+        assert!(parsed.extensions.contains(".mp4"));
+        assert_eq!(parsed.folder_patterns, vec!["node_modules".to_string()]);
+        assert_eq!(
+            parsed.filename_patterns,
+            vec!["package-lock.json".to_string(), "*.min.js".to_string()]
+        );
+    }
+
+    #[test]
+    fn default_config_includes_filename_patterns() {
+        let parsed = parse_lines(DEFAULT_CONFIG.lines());
+        assert!(parsed.filename_patterns.contains(&"package-lock.json".to_string()));
+        assert!(parsed.filename_patterns.contains(&"*.min.js".to_string()));
+    }
+
+    #[test]
+    fn should_exclude_filename_matches_exact_and_glob() {
+        let config = Config {
+            excluded_extensions: HashSet::new(),
+            excluded_folders: GlobSet::empty(),
+            excluded_filenames: build_glob_set(&[
+                "package-lock.json".to_string(),
+                "*.min.js".to_string(),
+            ]),
+        };
+        assert!(config.should_exclude_filename("package-lock.json"));
+        assert!(config.should_exclude_filename("app.min.js"));
+        assert!(!config.should_exclude_filename("app.js"));
+        assert!(!config.should_exclude_filename("notes.md"));
+    }
 }
