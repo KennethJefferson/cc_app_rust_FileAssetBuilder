@@ -113,7 +113,7 @@ pub fn scan_directory(
     }
 
     scan_spinner.finish_with_message(format!(
-        "Scanned: {} files found, {} excluded by extension, {} folders skipped",
+        "Scanned: {} files found, {} excluded by config, {} folders skipped",
         stats.total_files, stats.files_excluded, stats.folders_skipped
     ));
 

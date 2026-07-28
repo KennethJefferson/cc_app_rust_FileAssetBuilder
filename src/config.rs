@@ -273,12 +273,12 @@ fn build_glob_set(patterns: &[String]) -> GlobSet {
                 builder.add(glob);
             }
             Err(e) => {
-                eprintln!("Warning: Invalid folder pattern '{}': {}", pattern, e);
+                eprintln!("Warning: Invalid exclusion pattern '{}': {}", pattern, e);
             }
         }
     }
     builder.build().unwrap_or_else(|e| {
-        eprintln!("Warning: Failed to build folder exclusion set: {}", e);
+        eprintln!("Warning: Failed to build exclusion set: {}", e);
         GlobSet::empty()
     })
 }
